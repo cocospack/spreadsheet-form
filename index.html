@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>데이터 입력</title>
+    <title>코코스팩 선예약</title>
     <style>
         .edit-mode input {
             width: 80px;
@@ -12,7 +12,7 @@
     </style>
 </head>
 <body>
-    <h2>데이터 입력</h2>
+    <h2>코코스팩 선예약</h2>
 
     <!-- 업체명 입력 -->
     <label>업체명: <input type="text" id="name"></label><br><br>
@@ -139,13 +139,13 @@
             let timestamp = `${date} ${time}`;
 
             if (!name || !date || items.length === 0) {
-                alert("제품명, 날짜, 품목을 입력하세요!");
+                alert("업체명, 날짜, 품목을 입력하세요!");
                 return;
             }
 
             let data = { name, timestamp, items };
 
-            fetch("https://script.google.com/macros/s/AKfycbzN0shuWf1vlKBVa_8tYw6fmXgdV7_SnG1pdmgA31gV6u56i_HNgDfRkxfKnLkZ7aZE2Q/exec", {
+            fetch("https://script.google.com/macros/s/AKfycbwCqDV5bsZyzJz_HzKE8AK7CznuSSacKtcXaXrX9F3Lyx7GnOxK_6-wrrAa2l86fnr0/exec", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data)
