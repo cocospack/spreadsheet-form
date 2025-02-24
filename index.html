@@ -9,6 +9,9 @@
             width: 80px;
             margin-right: 5px;
         }
+        .error {
+            color: red;
+        }
     </style>
 </head>
 <body>
@@ -48,6 +51,8 @@
     <br>
     <button onclick="submitData()">제출</button>
 
+    <p id="error-message" class="error"></p> <!-- 오류 메시지 표시용 -->
+
     <script>
         let items = [];
 
@@ -64,7 +69,7 @@
             let quantity = document.getElementById("item-quantity").value.replace(/,/g, ''); // 콤마 제거 후 저장
 
             if (!id || !detail || !quantity) {
-                alert("모든 항목을 입력하세요!");
+                alert("모든 품목 항목을 입력하세요!");
                 return;
             }
 
@@ -138,10 +143,18 @@
             let time = document.getElementById("time").value;
             let timestamp = `${date} ${time}`;
 
-            if (!name || !date || items.length === 0) {
-                alert("업체명, 날짜, 품목을 입력하세요!");
+            if (!name || !date || !time) {
+                document.getElementById("error-message").innerText = "업체명, 날짜, 시간은 필수로 입력해야 합니다!";
                 return;
             }
+
+            if (items.length === 0) {
+                document.getElementById("error-message").innerText = "적어도 하나 이상의 품목을 추가해야 합니다!";
+                return;
+            }
+
+            // 오류 메시지 초기화
+            document.getElementById("error-message").innerText = "";
 
             let data = { name, timestamp, items };
 
@@ -149,9 +162,13 @@
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data)
-            }).then(response => response.text())
-              .then(result => alert(result))
-              .catch(error => console.error(error));
+            })
+            .then(response => response.text())
+            .then(result => alert(result))
+            .catch(error => {
+                console.error(error);
+                document.getElementById("error-message").innerText = "서버와 연결할 수 없습니다. 다시 시도해 주세요.";
+            });
         }
     </script>
 </body>
