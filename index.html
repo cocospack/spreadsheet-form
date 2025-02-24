@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>데이터 입력</title>
+    <style>
+        .edit-mode input {
+            width: 80px;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h2>데이터 입력</h2>
+
+    <!-- 업체명 입력 -->
+    <label>업체명: <input type="text" id="name"></label><br><br>
+
+    <!-- 날짜 선택 -->
+    <label>날짜: <input type="date" id="date"></label><br><br>
+
+    <!-- 시간 선택 -->
+    <label>시간: 
+        <select id="time">
+            <script>
+                let timeSelect = "";
+                for (let h = 9; h <= 21; h++) {
+                    for (let m of ["00", "30"]) {
+                        let hour = h < 10 ? "0" + h : h;
+                        timeSelect += `<option value="${hour}:${m}">${hour}:${m}</option>`;
+                    }
+                }
+                document.write(timeSelect);
+            </script>
+        </select>
+    </label><br><br>
+
+    <!-- 품목 입력 필드 -->
+    <h3>품목 입력</h3>
+    <label>주문번호: <input type="text" id="item-id"></label>
+    <label>품목: <input type="text" id="item-detail"></label>
+    <label>수량: <input type="text" id="item-quantity" oninput="formatNumber(this)"></label>
+    <button onclick="addItem()">추가</button>
+
+    <ul id="items-list"></ul>
+
+    <br>
+    <button onclick="submitData()">제출</button>
+
+    <script>
+        let items = [];
+
+        function formatNumber(input) {
+            let value = input.value.replace(/,/g, ''); // 기존 콤마 제거
+            if (!isNaN(value) && value !== "") {
+                input.value = Number(value).toLocaleString(); // 천 단위 콤마 추가
+            }
+        }
+
+        function addItem() {
+            let id = document.getElementById("item-id").value;
+            let detail = document.getElementById("item-detail").value;
+            let quantity = document.getElementById("item-quantity").value.replace(/,/g, ''); // 콤마 제거 후 저장
+
+            if (!id || !detail || !quantity) {
+                alert("모든 항목을 입력하세요!");
+                return;
+            }
+
+            let newItem = { id, detail, quantity, edit: false };
+            items.push(newItem);
+            updateItemList();
+
+            document.getElementById("item-id").value = "";
+            document.getElementById("item-detail").value = "";
+            document.getElementById("item-quantity").value = "";
+        }
+
+        function updateItemList() {
+            let itemList = document.getElementById("items-list");
+            itemList.innerHTML = ""; // 기존 목록 초기화
+
+            items.forEach((item, index) => {
+                let listItem = document.createElement("li");
+                
+                if (item.edit) {
+                    listItem.innerHTML = `
+                        <input type="text" value="${item.id}" id="edit-id-${index}">
+                        <input type="text" value="${item.detail}" id="edit-detail-${index}">
+                        <input type="text" value="${Number(item.quantity).toLocaleString()}" id="edit-quantity-${index}" oninput="formatNumber(this)">
+                        <button onclick="saveEdit(${index})">저장</button>
+                        <button onclick="cancelEdit(${index})">취소</button>
+                    `;
+                } else {
+                    listItem.innerHTML = `
+                        ${item.id} - ${item.detail} (${Number(item.quantity).toLocaleString()}) 
+                        <button onclick="editItem(${index})">수정</button> 
+                        <button onclick="deleteItem(${index})">삭제</button>
+                    `;
+                }
+
+                itemList.appendChild(listItem);
+            });
+        }
+
+        function editItem(index) {
+            items[index].edit = true;
+            updateItemList();
+        }
+
+        function saveEdit(index) {
+            let newId = document.getElementById(`edit-id-${index}`).value;
+            let newDetail = document.getElementById(`edit-detail-${index}`).value;
+            let newQuantity = document.getElementById(`edit-quantity-${index}`).value.replace(/,/g, ''); // 콤마 제거 후 저장
+
+            if (newId && newDetail && newQuantity) {
+                items[index] = { id: newId, detail: newDetail, quantity: newQuantity, edit: false };
+                updateItemList();
+            }
+        }
+
+        function cancelEdit(index) {
+            items[index].edit = false;
+            updateItemList();
+        }
+
+        function deleteItem(index) {
+            if (confirm("이 항목을 삭제하시겠습니까?")) {
+                items.splice(index, 1);
+                updateItemList();
+            }
+        }
+
+        function submitData() {
+            let name = document.getElementById("name").value;
+            let date = document.getElementById("date").value;
+            let time = document.getElementById("time").value;
+            let timestamp = `${date} ${time}`;
+
+            if (!name || !date || items.length === 0) {
+                alert("제품명, 날짜, 품목을 입력하세요!");
+                return;
+            }
+
+            let data = { name, timestamp, items };
+
+            fetch("https://script.google.com/macros/s/AKfycbzN0shuWf1vlKBVa_8tYw6fmXgdV7_SnG1pdmgA31gV6u56i_HNgDfRkxfKnLkZ7aZE2Q/exec", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            }).then(response => response.text())
+              .then(result => alert(result))
+              .catch(error => console.error(error));
+        }
+    </script>
+</body>
+</html>
